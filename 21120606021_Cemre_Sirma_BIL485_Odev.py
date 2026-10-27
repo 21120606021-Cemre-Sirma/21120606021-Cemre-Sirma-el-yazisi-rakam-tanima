@@ -17,73 +17,73 @@ def turkish_summary(satir):
     print(satir)
 model.summary(print_fn=turkish_summary)
 print("\nÖğrenme Safhası")
-Start_Verildigi_Zaman = time.time()
-Ogrenilmis_Seyler = model.fit(x_train, y_train, epochs=10, validation_split=0.2)
-Finish_Yapildigi_Zaman = time.time()
-Ogrenme_Zamanı = Finish_Yapildigi_Zaman - Start_Verildigi_Zaman
-print(f"\nEğitim Zamanımız şu kadardır: {Ogrenme_Zamanı:.2f} saniyedir")
-Loss_Degeri, Accuracy_Degeri = model.evaluate(x_test, y_test, verbose=0)
-print(f"\nTestin Loss Değeri Şudur: {Loss_Degeri:.4f}")
-print(f"Testin Accuracy Değeri ise şudur: {Accuracy_Degeri:.4f}")
+Start = time.time()
+Learned = model.fit(x_train, y_train, epochs=10, validation_split=0.2)
+Finish = time.time()
+Time = Finish - Start
+print(f"\nEğitim Zamanımız şu kadardır: {Time:.2f} saniyedir")
+LossDeg, AccuracyDeg = model.evaluate(x_test, y_test, verbose=0)
+print(f"\nTestin Loss Değeri Şudur: {LossDeg:.4f}")
+print(f"Testin Accuracy Değeri ise şudur: {AccuracyDeg:.4f}")
 plt.figure(figsize=(12, 4))
 plt.subplot(1, 2, 1)
-plt.plot(Ogrenilmis_Seyler.history['accuracy'], label='Öğrenim Sonrası Accuracy Değeri')
-plt.plot(Ogrenilmis_Seyler.history['val_accuracy'], label='Validasyon Sonrası Accuracy Değeri')
+plt.plot(Learned.history['accuracy'], label='Öğrenim Sonrası Accuracy Değeri')
+plt.plot(Learned.history['val_accuracy'], label='Validasyon Sonrası Accuracy Değeri')
 plt.title('Modelin Accuracy Değeri')
 plt.xlabel('Kaç Döngü Yapıldı')
 plt.ylabel('Accuracy Değeri')
 plt.legend()
 plt.subplot(1, 2, 2)
-plt.plot(Ogrenilmis_Seyler.history['loss'], label='Öğrenim Sonrası Loss Değeri')
-plt.plot(Ogrenilmis_Seyler.history['val_loss'], label='Validasyon Sonrası Loss Değeri')
+plt.plot(Learned.history['loss'], label='Öğrenim Sonrası Loss Değeri')
+plt.plot(Learned.history['val_loss'], label='Validasyon Sonrası Loss Değeri')
 plt.title('Modelin Loss Değeri')
 plt.xlabel('Kaç Döngü Yapıldı')
 plt.ylabel('Loss Değeri')
 plt.legend()
 model.save('egitilmis_mlp_modeli.keras')
 plt.show()
-picture = cv2.imread('ogrenci_numaram.jpg', cv2.IMREAD_GRAYSCALE)
-picture = cv2.medianBlur(picture, 3)
-_, picture_reverse = cv2.threshold(picture, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+pict = cv2.imread('ogrenci_numaram.jpg', cv2.IMREAD_GRAYSCALE)
+pict = cv2.medianBlur(pict, 3)
+_, rev = cv2.threshold(pict, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 core = np.ones((2, 2), np.uint8)
-resim_ters = cv2.erode(picture_reverse, core, iterations=2)
-img_h, img_w = picture_reverse.shape
-konturlar, _ = cv2.findContours(picture_reverse, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-Dortgenler = [cv2.boundingRect(k) for k in konturlar]
-Dortgenler = sorted(Dortgenler, key=lambda x: x[0])
-Bulunan_Sayi = ""
-islem_yapilmis_sayilar = []
-for x_kordinati, y_kordinati, weight, height in Dortgenler:
-    if 50 < height < (img_h - 20) and 15 < weight < (img_w / 2):
-        sayi = picture_reverse[y_kordinati:y_kordinati + height, x_kordinati:x_kordinati + weight]
-        if weight > height:
-            yeni_weight = 20
-            yeni_height = max(1, int((height / weight) * 20))
+rev = cv2.erode(rev, core, iterations=2)
+pict_h, pict_w = rev.shape
+kont, _ = cv2.findContours(rev, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+rect = [cv2.boundingRect(k) for k in kont]
+rect = sorted(rect, key=lambda x: x[0])
+fnd = ""
+prog = []
+for i, j, k, l in rect:
+    if 50 < l < (pict_h - 20) and 15 < k < (pict_w / 2):
+        sayi = rev[j:j + l, i:i + k]
+        if k > l:
+            kn = 20
+            ln = max(1, int((l / k) * 20))
         else:
-            yeni_height = 20
-            yeni_weight = max(1, int((weight / height) * 20))
-        kucuk_sayi = cv2.resize(sayi, (yeni_weight, yeni_height), interpolation=cv2.INTER_AREA)
-        gecici_28 = np.zeros((28, 28), dtype=np.uint8)
-        ust_taraftaki = (28 - yeni_height) // 2
-        sol_taraftaki = (28 - yeni_weight) // 2
-        gecici_28[ust_taraftaki:ust_taraftaki + yeni_height, sol_taraftaki:sol_taraftaki + yeni_weight] = kucuk_sayi
-        M = cv2.moments(gecici_28)
+            ln = 20
+            kn = max(1, int((k / l) * 20))
+        sml = cv2.resize(sayi, (kn, ln), interpolation=cv2.INTER_AREA)
+        temp = np.zeros((28, 28), dtype=np.uint8)
+        up = (28 - ln) // 2
+        left = (28 - kn) // 2
+        temp[up:up + ln, left:left + kn] = sml
+        M = cv2.moments(temp)
         if M["m00"] != 0:
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
-            kaydirma_matrisi = np.float32([[1, 0, 14 - cx], [0, 1, 14 - cy]])
-            sayi_28x28_boyutunda = cv2.warpAffine(gecici_28, kaydirma_matrisi, (28, 28))
+            mtrx = np.float32([[1, 0, 14 - cx], [0, 1, 14 - cy]])
+            numb28 = cv2.warpAffine(temp, mtrx, (28, 28))
         else:
-            sayi_28x28_boyutunda = gecici_28
-        sayi_28x28_boyutunda = cv2.GaussianBlur(sayi_28x28_boyutunda, (3, 3), 0)
-        islem_yapilmis_sayilar.append(sayi_28x28_boyutunda)
-        model_icin_sayi = (sayi_28x28_boyutunda / 255.0).reshape(1, 28, 28)
-        tahmini_deger = np.argmax(model.predict(model_icin_sayi, verbose=0))
-        Bulunan_Sayi += str(tahmini_deger)
-print(f"\nBulunan Sayı Şudur: {Bulunan_Sayi}")
+            numb28 = temp
+        numb28 = cv2.GaussianBlur(numb28, (3, 3), 0)
+        prog.append(numb28)
+        modlnumb = (numb28 / 255.0).reshape(1, 28, 28)
+        pred = np.argmax(model.predict(modlnumb, verbose=0))
+        fnd += str(pred)
+print(f"\nBulunan Sayı Şudur: {fnd}")
 plt.figure(figsize=(12, 2))
-for i, sayinin_resmi in enumerate(islem_yapilmis_sayilar):
-    plt.subplot(1, len(islem_yapilmis_sayilar), i + 1)
-    plt.imshow(sayinin_resmi, cmap='gray')
+for i, pict1 in enumerate(prog):
+    plt.subplot(1, len(prog), i + 1)
+    plt.imshow(pict1, cmap='gray')
     plt.axis('off')
 plt.show()
