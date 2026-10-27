@@ -10,11 +10,11 @@ x_train = x_train / 255.0
 x_test = x_test / 255.0
 model = tf.keras.models.Sequential([tf.keras.layers.Flatten(input_shape=(28, 28)), tf.keras.layers.Dense(128, activation='relu'), tf.keras.layers.Dense(64, activation='relu'), tf.keras.layers.Dense(10, activation='softmax')])
 model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-def turkish_summary(satir):
-    satir = satir.replace("Total params", "Toplam parametre sayısı ve boyutu(KB)")
-    satir = satir.replace("Trainable params", "Eğitilebilir parametre sayısı ve boyutu(KB)")
-    satir = satir.replace("Non-trainable params", "Eğitilemeyen parametre sayısı ve boyutu(KB)")
-    print(satir)
+def turkish_summary(colmn):
+    colmn = colmn.replace("Total params", "Toplam parametre sayısı ve boyutu(KB)")
+    colmn = colmn.replace("Trainable params", "Eğitilebilir parametre sayısı ve boyutu(KB)")
+    colmn = colmn.replace("Non-trainable params", "Eğitilemeyen parametre sayısı ve boyutu(KB)")
+    print(colmn)
 model.summary(print_fn=turkish_summary)
 print("\nÖğrenme Safhası")
 Start = time.time()
@@ -55,14 +55,14 @@ fnd = ""
 prog = []
 for i, j, k, l in rect:
     if 50 < l < (pict_h - 20) and 15 < k < (pict_w / 2):
-        sayi = rev[j:j + l, i:i + k]
+        numb = rev[j:j + l, i:i + k]
         if k > l:
             kn = 20
             ln = max(1, int((l / k) * 20))
         else:
             ln = 20
             kn = max(1, int((k / l) * 20))
-        sml = cv2.resize(sayi, (kn, ln), interpolation=cv2.INTER_AREA)
+        sml = cv2.resize(numb, (kn, ln), interpolation=cv2.INTER_AREA)
         temp = np.zeros((28, 28), dtype=np.uint8)
         up = (28 - ln) // 2
         left = (28 - kn) // 2
